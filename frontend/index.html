@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description"
+        content="CodeJudge — Write, run, and judge code in your browser with Python, C++, Java, and JavaScript support." />
+    <title>CodeJudge — Online Code Compiler</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+
+    <!-- Axios CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+    <!-- Monaco Editor CDN -->
+    <link rel="stylesheet" data-name="vs/editor/editor.main"
+        href="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.css" />
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ============== LANDING PAGE ============== -->
+    <section class="landing-page" id="landing-page">
+        <div class="landing-page__content">
+            <div class="landing-page__hero">
+                <div class="landing-page__logo">⚡</div>
+                <h1 class="landing-page__title">CodeJudge</h1>
+                <p class="landing-page__subtitle">The ultimate playground for developers. <br> Write, run, and debug
+                    code in seconds.</p>
+            </div>
+
+            <div class="landing-page__auth-box">
+                <button type="button" class="btn btn--google" id="landing-google-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"
+                            fill="#4285F4" />
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853" />
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            fill="#FBBC05" />
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EA4335" />
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <div class="landing-page__actions">
+                    <button class="btn btn--primary btn--full" id="landing-login-btn">Log In</button>
+                    <button class="btn btn--secondary btn--full" id="landing-register-btn">Create Account</button>
+                </div>
+            </div>
+
+            <div class="landing-page__footer">
+                <span>By continuing, you agree to our Terms and Conditions.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== APP CONTAINER ============== -->
+    <div id="app-container" style="display:none;">
+        <!-- ============== NAVBAR ============== -->
+        <nav class="navbar" id="navbar">
+            <div class="navbar__brand">
+                <span class="navbar__logo">⚡</span>
+                <h1 class="navbar__title">CodeJudge</h1>
+            </div>
+
+            <div class="navbar__controls">
+                <!-- Language Selector -->
+                <div class="select-wrapper" id="lang-select-wrapper">
+                    <select id="language-select" aria-label="Select language">
+                        <option value="python" selected>Python</option>
+                        <option value="cpp">C++</option>
+                        <option value="java">Java</option>
+                        <option value="javascript">JavaScript</option>
+                    </select>
+                </div>
+
+                <!-- Standard Input Toggle -->
+                <button class="btn btn--ghost" id="stdin-toggle-btn" title="Toggle Standard Input">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <span>Stdin</span>
+                </button>
+
+                <!-- Action Buttons -->
+                <button class="btn btn--primary" id="run-btn" title="Run Code (Ctrl+Enter)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    <span>Run</span>
+                </button>
+
+                <button class="btn btn--secondary" id="save-btn" title="Save Program">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    <span>Save</span>
+                </button>
+
+                <button class="btn btn--ai" id="fix-my-code-btn" title="AI: Fix & Optimize Code">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2a4 4 0 0 0-4 4c0 2 2 3 2 5h4c0-2 2-3 2-5a4 4 0 0 0-4-4z" />
+                        <line x1="10" y1="22" x2="14" y2="22" />
+                        <line x1="10" y1="19" x2="14" y2="19" />
+                        <line x1="10" y1="16" x2="14" y2="16" />
+                    </svg>
+                    <span>Fix My Code</span>
+                </button>
+            </div>
+
+            <div class="navbar__tabs">
+                <button class="tab-btn tab-btn--active" data-tab="editor" id="tab-editor">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg>
+                    Editor
+                </button>
+                <button class="tab-btn" data-tab="programs" id="tab-programs">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                        <polyline points="13 2 13 9 20 9" />
+                    </svg>
+                    Saved
+                </button>
+                <button class="tab-btn" data-tab="history" id="tab-history">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    History
+                </button>
+
+                <!-- Auth: Login Button (shown when logged out) -->
+                <button class="btn btn--login" id="login-btn" title="Login / Register">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Login
+                </button>
+
+                <!-- Auth: User Badge (shown when logged in) -->
+                <div class="user-badge" id="user-badge" style="display:none;">
+                    <div class="user-badge__avatar" id="user-avatar">A</div>
+                    <span class="user-badge__name" id="user-name">User</span>
+                    <button class="btn btn--ghost btn--sm" id="logout-btn" title="Logout">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ============== MAIN CONTENT ============== -->
+        <main class="main" id="main-content">
+
+            <!-- ====== EDITOR VIEW ====== -->
+            <section class="view view--active" id="view-editor">
+                <div class="split-pane">
+                    <!-- Left: Code Editor -->
+                    <div class="pane pane--editor">
+                        <div class="pane__header">
+                            <span class="pane__dot pane__dot--red"></span>
+                            <span class="pane__dot pane__dot--yellow"></span>
+                            <span class="pane__dot pane__dot--green"></span>
+                            <span class="pane__title" id="editor-filename">main.py</span>
+                        </div>
+                        <!-- Stdin Panel (hidden by default) -->
+                        <div class="stdin-panel" id="stdin-panel" style="display:none;">
+                            <label for="stdin-input" class="stdin-label">Standard Input (stdin):</label>
+                            <textarea id="stdin-input" class="stdin-textarea"
+                                placeholder="Enter input for your program..." rows="3"></textarea>
+                        </div>
+                        <div id="monaco-editor" class="editor-container"></div>
+                    </div>
+
+                    <!-- Resizer -->
+                    <div class="resizer" id="split-resizer"></div>
+
+                    <!-- Right: Output Console -->
+                    <div class="pane pane--output">
+                        <div class="pane__header">
+                            <span class="pane__dot pane__dot--red"></span>
+                            <span class="pane__dot pane__dot--yellow"></span>
+                            <span class="pane__dot pane__dot--green"></span>
+                            <span class="pane__title">Output</span>
+                            <button class="btn-icon" id="clear-output-btn" title="Clear output">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="output-console" id="output-console">
+                            <div class="output-placeholder" id="output-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1" opacity="0.3">
+                                    <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                                <p>Run your code to see output here</p>
+                            </div>
+                            <pre id="output-text" class="output-text" style="display:none;"></pre>
+                        </div>
+                        <!-- Execution Stats -->
+                        <div class="exec-stats" id="exec-stats" style="display:none;">
+                            <span class="stat" id="stat-status"></span>
+                            <span class="stat" id="stat-time"></span>
+                            <span class="stat" id="stat-memory"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== SAVED PROGRAMS VIEW ====== -->
+            <section class="view" id="view-programs">
+                <div class="panel-page">
+                    <div class="panel-page__header">
+                        <h2>Saved Programs</h2>
+                        <p class="panel-page__subtitle">Your saved code snippets</p>
+                    </div>
+                    <div class="programs-grid" id="programs-grid">
+                        <div class="empty-state" id="programs-empty">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1" opacity="0.3">
+                                <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                <polyline points="13 2 13 9 20 9" />
+                            </svg>
+                            <p>No saved programs yet</p>
+                            <span>Save your first program from the editor!</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ====== HISTORY VIEW ====== -->
+            <section class="view" id="view-history">
+                <div class="panel-page">
+                    <div class="panel-page__header">
+                        <h2>Execution History</h2>
+                        <p class="panel-page__subtitle">Track your past code runs</p>
+                    </div>
+                    <div class="history-list" id="history-list">
+                        <div class="empty-state" id="history-empty">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1" opacity="0.3">
+                                <circle cx="12" cy="12" r="10" />
+                                <polyline points="12 6 12 12 16 14" />
+                            </svg>
+                            <p>No execution history yet</p>
+                            <span>Run some code to build your history!</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div> <!-- END APP CONTAINER -->
+
+    <!-- ============== AUTH MODAL ============== -->
+    <div class="modal-overlay" id="auth-modal" style="display:none;">
+        <div class="modal modal--auth">
+            <div class="modal__header">
+                <h3 id="auth-modal-title">Login</h3>
+                <button class="btn-icon" id="auth-modal-close-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal__body">
+                <!-- Google Sign-In (shared between login/register) -->
+                <button type="button" class="btn btn--google" id="google-signin-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24">
+                        <path
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"
+                            fill="#4285F4" />
+                        <path
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            fill="#34A853" />
+                        <path
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                            fill="#FBBC05" />
+                        <path
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                            fill="#EA4335" />
+                    </svg>
+                    Sign in with Google
+                </button>
+
+                <div class="auth-divider">
+                    <span>or</span>
+                </div>
+
+                <!-- Login Form -->
+                <form id="login-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" placeholder="••••••••" required minlength="6" />
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full" id="login-submit-btn">Login</button>
+                    <p class="auth-form__switch">
+                        Don't have an account?
+                        <a href="#" id="switch-to-register">Register</a>
+                    </p>
+                </form>
+
+                <!-- Register Form -->
+                <form id="register-form" class="auth-form" style="display:none;">
+                    <div class="form-group">
+                        <label for="register-name">Name</label>
+                        <input type="text" id="register-name" placeholder="Your name" required maxlength="50" />
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="you@example.com" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" placeholder="Min 6 characters" required
+                            minlength="6" />
+                    </div>
+                    <button type="submit" class="btn btn--primary btn--full" id="register-submit-btn">Create
+                        Account</button>
+                    <p class="auth-form__switch">
+                        Already have an account?
+                        <a href="#" id="switch-to-login">Login</a>
+                    </p>
+                </form>
+
+                <!-- Auth Error -->
+                <div class="auth-error" id="auth-error" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== SAVE MODAL ============== -->
+    <div class="modal-overlay" id="save-modal" style="display:none;">
+        <div class="modal">
+            <div class="modal__header">
+                <h3>Save Program</h3>
+                <button class="btn-icon" id="modal-close-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal__body">
+                <label for="program-title-input">Program Title</label>
+                <input type="text" id="program-title-input" placeholder="e.g., Binary Search" maxlength="80" />
+            </div>
+            <div class="modal__footer">
+                <button class="btn btn--ghost" id="modal-cancel-btn">Cancel</button>
+                <button class="btn btn--primary" id="modal-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== AI DEBUGGER CHATBOT ============== -->
+    <div class="chatbot" id="chatbot" style="display:none;">
+        <div class="chatbot__header">
+            <div class="chatbot__header-left">
+                <span class="chatbot__icon">🤖</span>
+                <h3>AI Debugger</h3>
+            </div>
+            <button class="btn-icon" id="chatbot-close-btn" title="Close AI Debugger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="chatbot__messages" id="chatbot-messages">
+            <div class="chatbot__welcome">
+                <span class="chatbot__welcome-icon">✨</span>
+                <p>I'll automatically help you debug errors when you run your code.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============== TOAST ============== -->
+    <div class="toast-container" id="toast-container"></div>
+
+
+    <!-- ============== SCRIPTS ============== -->
+    <script>
+        var require = { paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' } };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/editor/editor.main.js"></script>
+    <script src="editor.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
