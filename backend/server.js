@@ -137,4 +137,10 @@ const startServer = async () => {
     });
 };
 
-startServer();
+// Start server only when running locally (not on Vercel)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    startServer();
+}
+
+// Export app for Vercel
+module.exports = app;
