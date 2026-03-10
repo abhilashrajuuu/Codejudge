@@ -91,7 +91,40 @@ app.get('/api/health', (req, res) => {
         status: 'ok',
         service: 'CodeJudge API',
         timestamp: new Date().toISOString(),
+        env: process.env.NODE_ENV,
+        vercel: !!process.env.VERCEL
     });
+});
+
+// DB Diagnostic
+app.get('/api/db-test', async (req, res) => {
+    try {
+        const mongoose = require('mongoose');
+        const state = mongoose.connection.readyState;
+        const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+
+        // Try a simple operation
+        let opResult = 'Not attempted';
+        if (state === 1) {
+            const collections = await mongoose.connection.db.listCollections().toArray();
+            opResult = `Found ${collections.length} collections`;
+        }
+
+        res.json({
+            status: state === 1 ? 'connected' : 'not connected',
+            readyState: state,
+            readyStateName: states[state],
+            operation: opResult,
+            uri_defined: !!process.env.MONGODB_URI,
+            uri_start: process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 15) + '...' : 'none'
+        });
+    } catch (err) {
+        res.status(500).json({
+            error: err.message,
+            stack: err.stack,
+            readyState: mongoose.connection.readyState
+        });
+    }
 });
 
 // Authentication (public)
