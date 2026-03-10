@@ -124,10 +124,12 @@ app.use((err, req, res, next) => {
    Start Server
    ======================================================================== */
 
-const startServer = async () => {
-    // Connect to MongoDB
-    await connectDB();
+// Connect to MongoDB (Mongoose will buffer commands until connection is ready)
+connectDB();
 
+// Start server only when running locally (not on Vercel)
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+    const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
         console.log('');
         console.log('  ⚡ CodeJudge API Server');
@@ -135,11 +137,6 @@ const startServer = async () => {
         console.log(`  ➜ Health:  http://localhost:${PORT}/api/health`);
         console.log('');
     });
-};
-
-// Start server only when running locally (not on Vercel)
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-    startServer();
 }
 
 // Export app for Vercel

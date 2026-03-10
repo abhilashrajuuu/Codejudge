@@ -1,15 +1,10 @@
 {
     "version": 2,
-    "builds": [
-        {
-            "src": "backend/server.js",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "frontend/**",
-            "use": "@vercel/static"
+    "functions": {
+        "backend/server.js": {
+            "runtime": "@vercel/node"
         }
-    ],
+    },
     "rewrites": [
         {
             "source": "/api/(.*)",
@@ -18,10 +13,6 @@
         {
             "source": "/(.*)",
             "destination": "/frontend/$1"
-        },
-        {
-            "source": "/",
-            "destination": "/frontend/index.html"
         }
     ]
 }
