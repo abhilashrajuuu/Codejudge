@@ -63,7 +63,11 @@ const register = async (req, res) => {
             user: userResponse(user),
         });
     } catch (err) {
-        console.error('[Auth] Register error:', err.message);
+        console.error('[Auth] Register Error:', {
+            message: err.message,
+            stack: err.stack,
+            body: req.body
+        });
 
         if (err.code === 11000) {
             return res.status(400).json({ error: 'An account with this email already exists' });
@@ -114,7 +118,11 @@ const login = async (req, res) => {
             user: userResponse(user),
         });
     } catch (err) {
-        console.error('[Auth] Login error:', err.message);
+        console.error('[Auth] Login Error:', {
+            message: err.message,
+            stack: err.stack,
+            email: req.body?.email
+        });
         return res.status(500).json({ error: 'Login failed. Please try again.' });
     }
 };

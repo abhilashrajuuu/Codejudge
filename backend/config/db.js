@@ -21,7 +21,9 @@ const connectDB = async () => {
 
         const conn = await mongoose.connect(uri);
 
+        console.log('------------------------------------');
         console.log(`[DB] MongoDB connected: ${conn.connection.host}`);
+        console.log('------------------------------------');
     } catch (error) {
         console.error(`[DB] Connection error: ${error.message}`);
         // Only exit process if running locally; on Vercel, let the platform handle it
